@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Responsive Nav Template</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="l-header" id="header">
+    <div class="l-inner">
+      <p><a href="#">サイトタイトル</a></p>
+      
+      <button class="c-hamburger" id="js-hamburger"
+              aria-controls="global-nav" aria-expanded="false"
+              aria-label="メニューを開閉">
+        <span></span><span></span><span></span>
+      </button>
+
+      <nav class="p-nav" id="global-nav" aria-label="グローバルメニュー" aria-hidden="true">
+        <ul class="p-nav__list">
+          <!--ページ内リンク-->
+          <li class="p-nav__item">
+            <a href="#first" class="p-nav__link">Section1</a>
+          </li>
+          <!--子メニューあり1-->
+          <li class="p-nav__item is-parent">
+            <!-- 親ページへのリンク -->
+            <a href="/parent1/" class="p-nav__link">Parent1</a>
+
+            <!-- 開閉トリガーだけを担うボタン -->
+            <button class="c-toggle js-dropdown"
+                    aria-expanded="false"
+                    aria-controls="service-sub">
+              <span class="u-visuallyHidden">子メニューを開閉</span>
+            </button>
+
+            <!-- 子メニュー -->
+            <ul id="service-sub" class="p-nav__sub">
+              <li><a href="/parent1/child1-1/">child1-1</a></li>
+              <li><a href="/parent1/child1-2/">child1-2</a></li>
+              <li><a href="/parent1/child1-3/">child1-3</a></li>
+            </ul>
+          </li>
+          <!--子メニューあり2-->
+          <li class="p-nav__item is-parent">
+            <!-- 親ページへのリンク -->
+            <a href="/parent2/" class="p-nav__link">Parent2</a>
+
+            <!-- 開閉トリガーだけを担うボタン -->
+            <button class="c-toggle js-dropdown"
+                    aria-expanded="false"
+                    aria-controls="service-sub">
+              <span class="u-visuallyHidden">子メニューを開閉</span>
+            </button>
+
+            <!-- 子メニュー -->
+            <ul id="service-sub" class="p-nav__sub">
+              <li><a href="/parent2/child2-1/">child2-1</a></li>
+              <li><a href="/parent2/child2-2/">child2-2</a></li>
+              <li><a href="/parent2/child2-3/">child2-3</a></li>
+            </ul>
+          </li>
+
+          <!--ページ内リンク-->
+          <li class="p-nav__item">
+            <a href="#second" class="p-nav__link">Section2</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="l-main">
+    <section id="first"   class="section">Section 1</section>
+    <section id="second" class="section section--alt">Section 2</section>
+    <section id="third"  class="section">Section 3</section>
+  </main>
+
+  <script src="js/main.js" defer></script>
+</body>
+</html>

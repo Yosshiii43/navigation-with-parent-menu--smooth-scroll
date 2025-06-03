@@ -1,0 +1,344 @@
+@charset "UTF-8";
+@import url("https://cdn.jsdelivr.net/npm/destyle.css@1.0.15/destyle.css"); /******************************
+mxin
+******************************/
+/******************************
+バリアブル
+******************************/
+/******************************
+ベース
+******************************/
+:root {
+  --header-h: 64px;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--header-h);
+  font-size: 100%;
+}
+
+body {
+  margin: 0;
+  color: #333;
+  background: #fff;
+  font-family: system-ui, "Helvetica Neue", Arial, sans-serif;
+}
+body.is-scrollLock {
+  overflow: hidden;
+}
+
+/* テンプレ確認用 */
+.section {
+  height: 100vh;
+  padding: 2.5rem 1.25rem;
+}
+
+.section--alt {
+  background: #f5f7fa;
+}
+
+/******************************
+ヘッダー
+******************************/
+.l-header {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: #fff;
+  border-bottom: 1px solid rgba(51, 51, 51, 0.1);
+}
+
+/******************************
+メイン
+******************************/
+/******************************
+インナー
+******************************/
+.l-inner {
+  max-width: 1000px;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+  display: flex;
+  align-items: center;
+  height: 4rem;
+  justify-content: space-between;
+}
+
+/******************************
+ハンバーガーメニュー
+******************************/
+.c-hamburger {
+  --bar-h: 2px;
+  --gap: 6px;
+  display: block;
+  width: 2rem;
+  height: 1.5rem;
+  position: relative;
+  z-index: 1000;
+  /* ─ 基本リセット ─ */
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  line-height: 0;
+  /* フォーカスリングをつける */
+  /* 展開アニメーション*/
+  /* PC では非表示 */
+}
+.c-hamburger:focus-visible {
+  outline: 2px solid #2684ff;
+  outline-offset: 2px;
+}
+.c-hamburger:focus {
+  outline: 2px solid #2684ff;
+  outline-offset: 2px;
+}
+@supports selector(:focus-visible) {
+  .c-hamburger:focus:not(:focus-visible) {
+    outline: none;
+  }
+}
+.c-hamburger[aria-expanded=true] span:nth-child(1) {
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+}
+.c-hamburger[aria-expanded=true] span:nth-child(2) {
+  opacity: 0;
+}
+.c-hamburger[aria-expanded=true] span:nth-child(3) {
+  top: 50%;
+  transform: translateY(-50%) rotate(-45deg);
+}
+.c-hamburger span {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: var(--bar-h);
+  background: #333;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.c-hamburger span:nth-child(1) {
+  top: 0;
+}
+.c-hamburger span:nth-child(2) {
+  top: 50%;
+  transform: translateY(-50%);
+}
+.c-hamburger span:nth-child(3) {
+  bottom: 0;
+}
+@media (min-width: 1024px) {
+  .c-hamburger {
+    display: none;
+  }
+}
+
+/* ----------------------------------------------------------
+   トグルボタン：親メニュー横の「▼」
+---------------------------------------------------------- */
+/* 画面には出さずスクリーンリーダーだけに読ませる共通クラス */
+.u-visuallyHidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* トグル本体 */
+.c-toggle {
+  /* リセット & 基本 */
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 0.75rem;
+  display: flex;
+  align-items: center;
+  line-height: 1;
+  /* ▼ (閉じている) */
+  /* ▼ (開いている) */
+  /* 1. 主要ブラウザで効く ------------------- */
+  /* 2. :focus-visible 未対応ブラウザ (iOS Safari 等) フォールバック */
+  /* 3. ただし :focus-visible をサポートしているブラウザでは
+        マウスクリック時の :focus を無効化したい          */
+}
+.c-toggle::after {
+  content: "";
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border: solid currentColor;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+}
+.c-toggle[aria-expanded=true]::after {
+  transform: rotate(225deg);
+}
+.c-toggle:focus-visible {
+  outline: 2px solid #2684ff;
+  outline-offset: 2px;
+}
+.c-toggle:focus {
+  outline: 2px solid #2684ff;
+  outline-offset: 2px;
+}
+@supports selector(:focus-visible) {
+  .c-toggle:focus:not(:focus-visible) {
+    outline: none;
+  }
+}
+
+/* ─ PC 幅 ───────────────────────────── */
+@media (min-width: 1024px) {
+  .c-toggle {
+    /* クリック無効化して矢印だけ見せる */
+    pointer-events: none;
+    cursor: default;
+    padding: 0 0.5rem;
+  }
+}
+/* =====================================================================
+   Global Navigation
+   - Mobile：右サイドからスライドインするパネル
+   - PC    ：横並びメニュー＋ドロップダウン
+===================================================================== */
+/* ──────────────────────────────────────────
+   1. ベース構造（モバイル基準）
+────────────────────────────────────────── */
+.p-nav {
+  /* サイドパネルとして固定 */
+  position: fixed;
+  inset: 0 0 0 auto;
+  z-index: 900;
+  width: min(80%, 17.5rem);
+  display: flex;
+  flex-direction: column;
+  padding: 5rem 1.5rem;
+  background: #fff;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  /* ─ リスト＆リンク ─────────────────── */
+  /* 親 li を flex 化して矢印を同じ行に並べる ------------- */
+  /* ─ 子メニュー（モバイルは閉じておく） ───── */
+}
+.p-nav.is-open {
+  transform: translateX(0);
+}
+.p-nav__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.p-nav__item {
+  position: relative;
+}
+.p-nav__link {
+  display: block;
+  padding: 0.75rem 0;
+  color: inherit;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+.p-nav__link:hover {
+  opacity: 0.7;
+}
+.p-nav .p-nav__item.is-parent {
+  display: flex; /* ← 追加 */
+  align-items: center; /* 行中央で縦揃え */
+  flex-wrap: wrap;
+  /* メニューテキスト側は自然に伸びてほしいので…   */
+  /* ② 矢印ボタンは右端へ  ------------------------------ */
+}
+.p-nav .p-nav__item.is-parent > .p-nav__link {
+  flex: 1 1 auto; /* ← 左側いっぱいに広がる */
+}
+.p-nav .p-nav__item.is-parent > .c-toggle {
+  flex: 0 0 auto; /* 幅は内容分だけ */
+  margin-left: 0.5rem; /* 文字と矢印の間隔   */
+}
+.p-nav__sub {
+  display: none;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.p-nav__sub a {
+  display: block;
+  padding: 0.5rem 0 0.5rem;
+}
+
+/* ──────────────────────────────────────────
+   1-B. 子メニュー (UL) を “2 行目で全幅” に展開
+────────────────────────────────────────── */
+.p-nav__sub {
+  flex: 0 0 100%; /* ←★ 折返した 2 行目で横幅 100% */
+  margin-top: 0.375rem; /* ちょっと下げて段差をつける */
+}
+@media (min-width: 1024px) {
+  .p-nav__sub {
+    margin-top: 0; /*0にしないとホバー状態を維持できない*/
+  }
+}
+
+/* 親 li に .is-open が付いたら子メニューを表示 */
+.is-open > .p-nav__sub {
+  display: block;
+}
+
+/* ──────────────────────────────────────────
+   2. デスクトップ幅での上書き
+────────────────────────────────────────── */
+@media (min-width: 1024px) {
+  .p-nav {
+    /* サイドパネル → インラインへ */
+    position: static;
+    transform: none;
+    flex-direction: row;
+    align-items: center;
+    width: auto;
+    padding: 0;
+    gap: 2rem;
+    /* ─ 子メニューをドロップダウン化 ─── */
+    /* hover / focus-within で開く */
+  }
+  .p-nav__list {
+    flex-direction: row;
+    gap: 3.125rem;
+  }
+  .p-nav__sub {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 10rem;
+    background: #fff;
+    padding: 0.75rem 0;
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.06);
+    z-index: 10;
+  }
+  .p-nav__item.is-parent:hover > .p-nav__sub, .p-nav__item.is-parent:focus-within > .p-nav__sub {
+    display: block;
+  }
+}
+/******************************
+hidden
+******************************/
+.u-hidden {
+  display: none !important;
+}
+/*# sourceMappingURL=style.css.map */

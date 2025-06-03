@@ -1,0 +1,30 @@
+/******************************
+ベース
+******************************/
+@use "forwards" as *;   // ここはパスが合っていれば OK
+
+:root {
+  --header-h: #{$header-h};
+}
+
+html  {
+  scroll-behavior: smooth;                // fallback
+  scroll-padding-top: var(--header-h);    // アンカー補正
+  font-size: 100%;
+}
+
+body  {
+  margin: 0;
+  color: $color-text;
+  background: $color-bg;
+  font-family: system-ui, "Helvetica Neue", Arial, sans-serif;
+  &.is-scrollLock { overflow: hidden; }
+}
+
+/* テンプレ確認用 */
+.section      { 
+  height: 100vh; 
+  padding: rem(40) rem(20); }
+.section--alt { 
+  background: #f5f7fa; 
+}

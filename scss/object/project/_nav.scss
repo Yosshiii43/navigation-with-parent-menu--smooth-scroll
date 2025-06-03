@@ -1,0 +1,130 @@
+/* =====================================================================
+   Global Navigation
+   - Mobile：右サイドからスライドインするパネル
+   - PC    ：横並びメニュー＋ドロップダウン
+===================================================================== */
+@use "../../foundation/forwards" as *;   // rem(), mq(), 色変数など
+
+/* ──────────────────────────────────────────
+   1. ベース構造（モバイル基準）
+────────────────────────────────────────── */
+.p-nav {
+  /* サイドパネルとして固定 */
+  position: fixed;
+  inset: 0 0 0 auto;                      // 右
+  z-index: 900;
+  width: min(80%, rem(280));
+  display: flex;
+  flex-direction: column;
+  padding: rem(80) rem(24);
+  background: $color-bg;
+  transform: translateX(100%);
+  transition: transform .3s ease;
+
+  &.is-open { transform: translateX(0); } // ハンバーガーで開閉
+
+  /* ─ リスト＆リンク ─────────────────── */
+  &__list{
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: rem(24);
+  }
+
+  &__item{ position: relative; }          // PCドロップダウン基点
+
+  &__link{
+    display: block;
+    padding: rem(12) 0;
+    color: inherit;
+    text-decoration: none;
+    transition: opacity .2s;
+    &:hover{ opacity:.7; }
+  }
+
+/* 親 li を flex 化して矢印を同じ行に並べる ------------- */
+  .p-nav__item.is-parent{
+    display: flex;           /* ← 追加 */
+    align-items: center;     /* 行中央で縦揃え */
+    flex-wrap: wrap;
+
+    /* メニューテキスト側は自然に伸びてほしいので…   */
+    > .p-nav__link{
+      flex: 1 1 auto;        /* ← 左側いっぱいに広がる */
+    }
+
+    /* ② 矢印ボタンは右端へ  ------------------------------ */
+    > .c-toggle{
+      flex: 0 0 auto;        /* 幅は内容分だけ */
+      margin-left: rem(8);/* 文字と矢印の間隔   */
+    }
+  }
+
+  /* ─ 子メニュー（モバイルは閉じておく） ───── */
+  &__sub{
+    display: none;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    a{
+      display: block;
+      padding: rem(8) 0 rem(8);
+    }
+  }
+}
+
+/* ──────────────────────────────────────────
+   1-B. 子メニュー (UL) を “2 行目で全幅” に展開
+────────────────────────────────────────── */
+.p-nav__sub{
+  flex: 0 0 100%;         /* ←★ 折返した 2 行目で横幅 100% */
+  margin-top: rem(6);     /* ちょっと下げて段差をつける */
+  @include mq("pc"){
+    margin-top: 0;  /*0にしないとホバー状態を維持できない*/
+  }
+}
+
+/* 親 li に .is-open が付いたら子メニューを表示 */
+.is-open > .p-nav__sub{ display:block; }
+
+
+/* ──────────────────────────────────────────
+   2. デスクトップ幅での上書き
+────────────────────────────────────────── */
+@include mq("pc"){
+  .p-nav{
+    /* サイドパネル → インラインへ */
+    position: static;
+    transform: none;
+    flex-direction: row;
+    align-items: center;
+    width: auto;
+    padding: 0;
+    gap: rem(32);
+
+    &__list{
+      flex-direction: row;
+      gap: rem(50);
+    }
+
+    /* ─ 子メニューをドロップダウン化 ─── */
+    &__sub{
+      position: absolute;
+      top: 100%; left: 0;
+      min-width: rem(160);
+      background: $color-bg;
+      padding: rem(12) 0;
+      box-shadow: 0 rem(4) rem(12) rgba(#000,.06);
+      z-index: 10;
+    }
+
+    /* hover / focus-within で開く */
+    &__item.is-parent:hover        > .p-nav__sub,
+    &__item.is-parent:focus-within > .p-nav__sub{
+      display:block;
+    }
+  }
+}

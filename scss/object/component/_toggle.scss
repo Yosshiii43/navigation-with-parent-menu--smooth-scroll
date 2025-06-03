@@ -1,0 +1,78 @@
+/* ----------------------------------------------------------
+   トグルボタン：親メニュー横の「▼」
+---------------------------------------------------------- */
+@use "../../foundation/forwards" as *;
+
+/* 画面には出さずスクリーンリーダーだけに読ませる共通クラス */
+.u-visuallyHidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* トグル本体 */
+.c-toggle {
+  /* リセット & 基本 */
+  appearance: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 rem(12);      // ▶ の左右余白
+  display: flex;
+  align-items: center;
+  line-height: 1;
+
+  /* ▼ (閉じている) */
+  &::after {
+    content: '';
+    display: inline-block;
+    width: rem(8);
+    height: rem(8);
+    border: solid currentColor;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    transition: transform .2s ease;
+  }
+
+  /* ▼ (開いている) */
+  &[aria-expanded="true"]::after {
+    transform: rotate(225deg);
+  }
+
+  ////フォーカスリング（SPにのみ表示）
+  /* 1. 主要ブラウザで効く ------------------- */
+  &:focus-visible{
+    outline: $focus-width solid $focus-color;
+    outline-offset: $focus-offset;
+  }
+
+  /* 2. :focus-visible 未対応ブラウザ (iOS Safari 等) フォールバック */
+  &:focus{
+    outline: $focus-width solid $focus-color;
+    outline-offset: $focus-offset;
+  }
+
+  /* 3. ただし :focus-visible をサポートしているブラウザでは
+        マウスクリック時の :focus を無効化したい          */
+  @supports selector(:focus-visible){
+    &:focus:not(:focus-visible){
+      outline: none;
+    }
+  }
+}
+
+/* ─ PC 幅 ───────────────────────────── */
+@include mq("pc") {
+  .c-toggle {
+    /* クリック無効化して矢印だけ見せる */
+    pointer-events: none;
+    cursor: default;
+    padding: 0 rem(8);
+  }
+}

@@ -1,4 +1,4 @@
-# responsive-navigation-smmooth-scroll
+# navigation-with-parent-menu- smooth-scroll
 
 ## ヘッダーのカスタマイズ
 

@@ -1,0 +1,14 @@
+/******************************
+インナー
+******************************/
+@use "../foundation/forwards" as *;
+
+.l-inner {
+  max-width: 1000px;
+  margin-inline: auto;
+  padding-inline: rem(20);
+  display: flex;
+  align-items: center;
+  height: rem(64);
+  justify-content: space-between;
+}

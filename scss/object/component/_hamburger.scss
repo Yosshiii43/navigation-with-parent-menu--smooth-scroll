@@ -1,0 +1,72 @@
+/******************************
+ハンバーガーメニュー
+******************************/
+@use "../../foundation/forwards" as *;
+
+.c-hamburger {
+  --bar-h: 2px;
+  --gap: 6px;
+
+  display : block;            // モバイル表示
+  width   : rem(32);
+  height  : rem(24);
+  position: relative;
+  z-index : 1000;
+
+  /* ─ 基本リセット ─ */
+  appearance: none;
+  padding   : 0;
+  border    : 0;
+  background: none;
+  cursor    : pointer;
+  line-height: 0;
+
+
+  /* フォーカスリングをつける */
+  &:focus-visible {
+    outline: $focus-width solid $focus-color;
+    outline-offset: $focus-offset;
+  }
+  &:focus {
+    outline: $focus-width solid $focus-color;
+    outline-offset: $focus-offset;
+  }
+  @supports selector(:focus-visible) {
+    &:focus:not(:focus-visible) { outline: none; }
+  }
+
+  &[aria-expanded="true"] {
+    span:nth-child(1) { 
+      top: 50%;
+      transform: translateY(-50%) rotate(45deg);
+    }
+    span:nth-child(2) { 
+      opacity: 0; 
+    }
+    span:nth-child(3) { 
+      top: 50%;
+      transform: translateY(-50%) rotate(-45deg);
+    }
+  }
+
+  /* 展開アニメーション*/
+  span {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: var(--bar-h);
+    //height: 2px;
+    background: $color-text;
+    transition: transform .3s ease, opacity .3s ease;
+
+    &:nth-child(1) { top: 0; }
+    &:nth-child(2) { top: 50%; transform: translateY(-50%); }
+    &:nth-child(3) { bottom: 0; }
+  }
+
+
+  /* PC では非表示 */
+  @include mq("pc") {
+    display: none;
+  }
+}
