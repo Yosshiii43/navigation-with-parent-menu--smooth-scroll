@@ -76,7 +76,7 @@ body.is-scrollLock {
   width: 2rem;
   height: 1.5rem;
   position: relative;
-  z-index: 1000;
+  z-index: 1200;
   /* ─ 基本リセット ─ */
   -webkit-appearance: none;
      -moz-appearance: none;
@@ -222,7 +222,7 @@ body.is-scrollLock {
   /* サイドパネルとして固定 */
   position: fixed;
   inset: 0 0 0 auto;
-  z-index: 900;
+  z-index: 1100;
   width: min(80%, 17.5rem);
   display: flex;
   flex-direction: column;

@@ -1,4 +1,4 @@
-# navigation-with-parent-menu- smooth-scroll
+# navigation-with-parent-menu--smooth-scroll
 
 ## ヘッダーのカスタマイズ
 
@@ -23,4 +23,4 @@ $header-mode: fixed;
 1. Sass Watcher で `style.min.css` が生成されていることを確認  
 2. `index.html` の `<link>` を `css/style.min.css` に切り替え  
 3. `css/style.css` と `css/style.css.map` はサーバにアップロードしない# parent-navigation-smooth-scroll
-# navigation-with-parent-menu--smooth-scroll
+
