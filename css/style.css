@@ -348,7 +348,10 @@ body {
     box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.06);
     z-index: 10;
   }
-  .p-nav__item.is-parent:hover > .p-nav__sub, .p-nav__item.is-parent:focus-within > .p-nav__sub {
+  .p-nav__item.is-parent:hover > .p-nav__sub {
+    display: block;
+  }
+  .p-nav__item.is-open > .p-nav__sub {
     display: block;
   }
 }

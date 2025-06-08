@@ -120,10 +120,13 @@
       z-index: 10;
     }
 
-    /* hover / focus-within で開く */
-    &__item.is-parent:hover        > .p-nav__sub,
-    &__item.is-parent:focus-within > .p-nav__sub{
-      display:block;
+    /* hover だけ残し、focus-within を削除 */
+    &__item.is-parent:hover > .p-nav__sub {
+      display: block;
+    }
+
+    &__item.is-open > .p-nav__sub {
+      display: block;
     }
   }
 }

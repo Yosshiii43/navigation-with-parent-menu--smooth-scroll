@@ -1,177 +1,215 @@
 /*************************************************************************
- * Responsive navigation + smooth scroll + parent‑menu toggle
- * main.js - * var.1.0
- * ハンバーガーメニュー制御 + スムーススクロール処理 + 親子メニュー
+ * main.js – ver.1.0
+ *
+ * ▼ ざっくり機能
+ *   1)  ハンバーガー開閉（SP）  …… サイドパネル表示／非表示
+ *   2)  スムーススクロール      …… #アンカーへふわっと移動
+ *   3-A)PC   : フォーカスで子メニュー表示・Esc/Tab で閉じる
+ *   3-B)SP   : .c-toggle(▼) を Enter/Space/Click でアコーディオン
+ *   4)  リサイズ時の再初期化    …… PC↔SP を行った時のバグ防止
  *************************************************************************/
 
-const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-
-if ('scrollRestoration' in history) {
-  history.scrollRestoration = 'manual';
-}
-
 document.addEventListener('DOMContentLoaded', () => {
-  const hamburger = document.getElementById('js-hamburger');
-  const nav = document.getElementById('global-nav');
-  const body = document.body;
+  /* ------------------------------------------------------------------ */
+  /* 0. 変数と便利関数                                                  */
+  /* ------------------------------------------------------------------ */
+  // ─ コンポーネント取得
+  const hamburger = document.getElementById('js-hamburger');  // ≡ ボタン
+  let   nav       = document.getElementById('global-nav');     // <nav>
+  const body      = document.body;
 
-  if (!hamburger || !nav) return;
+  // ─ 環境判定
+  const isSafari  = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  const mqPC      = window.matchMedia('(min-width: 1024px)'); // PC = 1024px↑
+  const isPC = () => mqPC.matches;    // true/false 返す関数
+  const isSP = () => !mqPC.matches;   // 同上
 
-  //utility : 現在ビューポートがモバイル幅かどうかを判定
-    const isMobile = () => window.matchMedia("(max-width: 1023px)").matches;
+  // ─ 子メニューを「全部」閉じる共通関数
+  function closeAllSubMenus() {
+    nav.querySelectorAll('.p-nav__item.is-parent').forEach(li =>
+      li.classList.remove('is-open')
+    );
+    // ▼アイコンの ARIA もリセット
+    nav.querySelectorAll('.c-toggle').forEach(tg =>
+      tg.setAttribute('aria-expanded', 'false')
+    );
+  }
 
-  // ハンバーガーメニュー開閉処理
-  const toggleMenu = () => {
-    const isOpen = nav.classList.toggle('is-open');
-    hamburger?.setAttribute('aria-expanded', isOpen);
-    nav.setAttribute('aria-hidden', !isOpen);
-    body.classList.toggle('is-scrollLock', isOpen);
+  // ─ PC では ▼ボタンを Tab で飛ばさないための tabindex 設定
+  function updateToggleTabindex() {
+    nav.querySelectorAll('.c-toggle').forEach(tg =>
+      tg.setAttribute('tabindex', isPC() ? '-1' : '0')
+    );
+  }
 
-    if (isOpen) {
-      nav.removeAttribute('inert');
-    } else {
-      const focused = document.activeElement;
-      if (nav.contains(focused)) focused.blur();
+  /* ------------------------------------------------------------------ */
+  /* 1. ハンバーガーメニュー（SP）                                       */
+  /* ------------------------------------------------------------------ */
+  // inert を使って「見えない時はフォーカスを当てられない」ようにする
+  function setInert(state) {
+    if (state) {
       nav.setAttribute('inert', '');
+      nav.setAttribute('aria-hidden', 'true');
+    } else {
+      nav.removeAttribute('inert');
+      nav.setAttribute('aria-hidden', 'false');
     }
-  };
+  }
 
-  hamburger?.addEventListener('click', toggleMenu);
+  // ≡ を押したときの開閉ロジック
+  function toggleMenu() {
+    const isOpen = nav.classList.toggle('is-open');         // パネル開閉
+    hamburger.setAttribute('aria-expanded', isOpen);
+    body.classList.toggle('is-scrollLock', isOpen);         // 背景スクロール禁止
 
-  //2. 子メニュー (parent‑menu) 開閉トグル ─ モバイル時のみ
-  const initDropdownMenus = () => {
-    const toggles = nav.querySelectorAll('.js-dropdown');
-    if (!toggles.length) return;
+    if (!isOpen) closeAllSubMenus();                       // 閉じる時は子も閉じる
+    setInert(isSP() && !isOpen);                           // inert 付け直し
+  }
+  hamburger.addEventListener('click', toggleMenu);
 
-    toggles.forEach(btn => {
-      const parentLi = btn.closest('.is-parent');
-      if (!parentLi) return;
+  /* ------------------------------------------------------------------ */
+  /* 2. スムーススクロール (#リンク)                                     */
+  /* ------------------------------------------------------------------ */
+  const smoothScrollTo = (y, duration = 600) => {
+    const start = window.pageYOffset;
+    const dist  = y - start;
+    const t0    = performance.now();
+    const ease  = t => t * (2 - t);                        // イージング関数
 
-      const handleToggle = e => {
-        if (!isMobile()) return;          // PC では JS 制御しない
-        e.preventDefault();
-
-        // ── アコーディオン：開く前に他を閉じる ─────────────
-        if (!parentLi.classList.contains('is-open')) {
-          nav.querySelectorAll('.is-parent.is-open').forEach(openLi => {
-            openLi.classList.remove('is-open');
-            const openBtn = openLi.querySelector('.js-dropdown');
-            if (openBtn) openBtn.setAttribute('aria-expanded', false);
-          });
-        }
-
-        const isOpen = parentLi.classList.toggle('is-open');
-        btn.setAttribute('aria-expanded', isOpen);
-      };
-
-      btn.addEventListener('click', handleToggle);
-
-      // Esc キーで閉じる
-      btn.addEventListener('keydown', e => {
-        if (e.key === 'Escape') {
-          parentLi.classList.remove('is-open');
-          btn.setAttribute('aria-expanded', false);
-          btn.focus();
-        }
-      });
-    });
-  };
-  initDropdownMenus();
-
-// JS 初期化時に PC 幅なら矢印をフォーカス不可に
-const setToggleTabIndex = () => {
-  const toggles = document.querySelectorAll('.c-toggle');
-  toggles.forEach(btn => {
-    const disable = window.matchMedia('(min-width:1024px)').matches;
-    btn.tabIndex = disable ? -1 : 0;
-    btn.setAttribute('aria-hidden', disable);
-  });
-};
-
-setToggleTabIndex();
-window.addEventListener('resize', setToggleTabIndex); // 幅を跨いだときも更新
-
-  // Safari対策付きスムーススクロール
-  const smoothScrollTo = (targetY, duration = 600) => {
-    const startY = window.pageYOffset;
-    const distance = targetY - startY;
-    const startTime = performance.now();
-    const easeOutQuad = t => t * (2 - t);
-
-    const step = currentTime => {
-      const time = Math.min(1, (currentTime - startTime) / duration);
-      const eased = easeOutQuad(time);
-      window.scrollTo(0, startY + distance * eased);
-      if (time < 1) requestAnimationFrame(step);
+    const step = now => {
+      const t = Math.min(1, (now - t0) / duration);
+      window.scrollTo(0, start + dist * ease(t));
+      if (t < 1) requestAnimationFrame(step);
     };
-
     requestAnimationFrame(step);
   };
 
-  const scrollToTarget = target => {
-    const rect = target.getBoundingClientRect();
-    const scrollY = window.pageYOffset;
-    const scrollPadding = parseFloat(
-      getComputedStyle(document.documentElement).getPropertyValue('--header-h')
+  function scrollToTarget(target) {
+    // 固定ヘッダーぶん上にずらす
+    const headerH = parseFloat(
+      getComputedStyle(document.documentElement)
+        .getPropertyValue('--header-h')
     ) || 0;
-    const offsetY = scrollY + rect.top - scrollPadding;
 
-    if (isSafari) {
-      smoothScrollTo(offsetY, 600);
-    } else {
-      window.scrollTo({ top: offsetY, behavior: 'smooth' });
-    }
-  };
+    const y = window.pageYOffset + target.getBoundingClientRect().top - headerH;
+    isSafari ? smoothScrollTo(y) : window.scrollTo({ top: y, behavior: 'smooth' });
+  }
 
-  // アンカーリンククリック処理
-  document.querySelectorAll('a[href^="#"]').forEach(link => {
-    const handleAnchor = e => {
-      const href = link.getAttribute('href');
-      if (!href || href === '#') return;
-      const target = document.querySelector(href);
-      if (!target) return;
-
+  // <a href="#～"> をキャッチ
+  nav.querySelectorAll('a[href^=\"#\"]').forEach(link => {
+    link.addEventListener('click', e => {
+      const href  = link.getAttribute('href');
+      const dest  = document.querySelector(href);
+      if (!dest) return;
       e.preventDefault();
-      history.pushState(null, '', href);
-
-      if (nav.classList.contains('is-open')) toggleMenu();
-
-      requestAnimationFrame(() => scrollToTarget(target));
-    };
-
-    link.addEventListener('mousedown', e => {
-      if (e.button === 0) handleAnchor(e);
-    });
-
-    link.addEventListener('keydown', e => {
-      if (e.key === 'Enter') handleAnchor(e);
+      history.pushState(null, '', href);           // URL の # も更新
+      if (nav.classList.contains('is-open')) toggleMenu(); // SP時は閉じる
+      requestAnimationFrame(() => scrollToTarget(dest));
     });
   });
 
-  // 初期読み込み時のハッシュ対応
-  const hash = location.hash;
-  if (hash) {
-    const target = document.querySelector(hash);
-    if (target) {
-      requestAnimationFrame(() => scrollToTarget(target));
+  /* ------------------------------------------------------------------ */
+  /* 3. PC 幅：フォーカスで開き Esc/Tab で閉じる                        */
+  /* ------------------------------------------------------------------ */
+  function attachPCFocusHandlers() {
+    nav.querySelectorAll('.p-nav__item.is-parent').forEach(parentLi => {
+      if (parentLi.dataset.pcBound) return;           // 二重登録防止
+      parentLi.dataset.pcBound = 'true';
+
+      const parentLink = parentLi.querySelector('.p-nav__link');
+      const childLinks = [...parentLi.querySelectorAll('.p-nav__sub a')];
+
+      // 親にフォーカス → その子メニューを開き、他を閉じる
+      parentLink.addEventListener('focus', () => {
+        if (!isPC()) return;
+        closeAllSubMenus();
+        parentLi.classList.add('is-open');
+      });
+
+      // 親リンク Esc → 閉じる
+      parentLink.addEventListener('keydown', e => {
+        if (isPC() && e.key === 'Escape') {
+          parentLi.classList.remove('is-open');
+          parentLink.blur();                         // focus-within 解除
+        }
+      });
+
+      // 子リンク: Esc or 最後のTab で閉じる
+      childLinks.forEach((link, idx) => {
+        link.addEventListener('keydown', e => {
+          if (!isPC()) return;
+
+          if (e.key === 'Escape') {
+            e.preventDefault();
+            parentLi.classList.remove('is-open');
+            link.blur();
+            return;
+          }
+          // 最後のリンクで Tab → 次のメニューへ
+          if (e.key === 'Tab' && !e.shiftKey && idx === childLinks.length - 1) {
+            parentLi.classList.remove('is-open');
+          }
+        });
+      });
+    });
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* 4. SP 幅：▼ボタン (.c-toggle) アコーディオン                       */
+  /* ------------------------------------------------------------------ */
+  function accordToggle(toggle) {
+    const parentLi = toggle.closest('.p-nav__item');
+    const isOpen   = parentLi.classList.contains('is-open');
+
+    closeAllSubMenus();                       // まず全部閉じる（排他）
+    if (!isOpen) {
+      parentLi.classList.add('is-open');      // 自分だけ開く
+      toggle.setAttribute('aria-expanded', 'true');
     }
   }
 
-  // PC/SP幅の切り替えに応じてナビ状態調整
-  window.matchMedia('(min-width: 768px)').addEventListener('change', e => {
-    if (e.matches) {
-      nav.removeAttribute('aria-hidden');
-      nav.removeAttribute('inert');
-    } else {
-      if (!nav.classList.contains('is-open')) {
-        nav.setAttribute('aria-hidden', 'true');
-        nav.setAttribute('inert', '');
-      }
-    }
-  });
+  function attachSPAccordion() {
+    nav.querySelectorAll('.c-toggle').forEach(toggle => {
+      // 毎回 tabindex を上書き（幅変更直後も確実に更新）
+      toggle.setAttribute('tabindex', isPC() ? '-1' : '0');
 
-  if (window.matchMedia('(min-width: 768px)').matches) {
-    nav.removeAttribute('aria-hidden');
-    nav.removeAttribute('inert');
+      if (toggle.dataset.spBound) return;     // 二重登録防止
+      toggle.dataset.spBound = 'true';
+
+      toggle.addEventListener('click', () => {
+        if (isPC()) return;                   // PC 幅では無効
+        accordToggle(toggle);
+      });
+
+      toggle.addEventListener('keydown', e => {
+        if (isPC()) return;
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+          e.preventDefault();                 // Space のページスクロール防止
+          accordToggle(toggle);
+        }
+      });
+    });
   }
+
+  /* ------------------------------------------------------------------ */
+  /* 5. 幅切替時の再初期化                                              */
+  /* ------------------------------------------------------------------ */
+  function pcSpReInit() {
+    closeAllSubMenus();           // 子メニュー全閉じ
+    nav.classList.remove('is-open');      // ハンバーガーパネルも閉じる
+    setInert(isSP());              // inert 付け直し
+
+    updateToggleTabindex();        // ▼ボタンの tabindex 切替
+    attachPCFocusHandlers();       // ハンドラ重複しないよう flags 済み
+    attachSPAccordion();
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* 初期化 (ここが実質の main 関数)                                     */
+  /* ------------------------------------------------------------------ */
+  updateToggleTabindex();       // ① まず tabindex を確定
+  attachPCFocusHandlers();      // ② PC 用ハンドラ登録
+  attachSPAccordion();          // ③ SP 用ハンドラ登録
+  mqPC.addEventListener('change', pcSpReInit); // 幅変更ウォッチ
+  setInert(isSP());             // ④ inert 付ける（初期パネルは閉じている）
 });
