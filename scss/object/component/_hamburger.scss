@@ -7,11 +7,11 @@
   --bar-h: 2px;
   --gap: 6px;
 
-  display : block;            // モバイル表示
-  width   : rem(32);
-  height  : rem(24);
+  display: block;          // ← モバイルで表示
+  width: rem(32);
+  height: calc(var(--bar-h) * 3 + var(--gap) * 2);;
   position: relative;
-  z-index : $z-hamburger;
+  z-index: $z-hamburger;
 
   /* ─ 基本リセット ─ */
   appearance: none;
@@ -20,7 +20,6 @@
   background: none;
   cursor    : pointer;
   line-height: 0;
-
 
   /* フォーカスリングをつける */
   &:focus-visible {
@@ -34,38 +33,37 @@
   @supports selector(:focus-visible) {
     &:focus:not(:focus-visible) { outline: none; }
   }
-
-  &[aria-expanded="true"] {
-    span:nth-child(1) { 
-      top: 50%;
-      transform: translateY(-50%) rotate(45deg);
-    }
-    span:nth-child(2) { 
-      opacity: 0; 
-    }
-    span:nth-child(3) { 
-      top: 50%;
-      transform: translateY(-50%) rotate(-45deg);
-    }
-  }
-
+  
   /* 展開アニメーション*/
+  //閉じた状態
   span {
     position: absolute;
     left: 0;
     right: 0;
-    height: var(--bar-h);
-    //height: 2px;
+    height: calc(var(--bar-h) * 2);
     background: $color-text;
+    transform: scaleY(.5);
+    transform-origin: top;
     transition: transform .3s ease, opacity .3s ease;
-
-    &:nth-child(1) { top: 0; }
-    &:nth-child(2) { top: 50%; transform: translateY(-50%); }
-    &:nth-child(3) { bottom: 0; }
+    
+  &:nth-child(1){ top: 0; }
+  &:nth-child(2){ top: calc(var(--bar-h) + var(--gap)); }
+  &:nth-child(3){ top: calc((var(--bar-h) + var(--gap)) * 2); }
   }
 
+  //開いた状態
+  &[aria-expanded="true"] {
+    span:nth-child(1),
+    span:nth-child(3){
+      top: 50%;
+      transform-origin:center; //支点を中央
+    }
+    span:nth-child(1){ transform:translateY(-50%) rotate(45deg) scaleY(.5); }
+    span:nth-child(2) { opacity: 0; }
+    span:nth-child(3) { transform:translateY(-50%) rotate(-45deg) scaleY(.5); }
+  }
 
-  /* PC では非表示 */
+  // PC では非表示
   @include mq("pc") {
     display: none;
   }

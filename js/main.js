@@ -1,54 +1,50 @@
 /*************************************************************************
  * Responsive navigation + smooth scroll + parent‑menu toggle
- * 2025.06  |  scroll‑restoration fix added
- * 2025.06  |  Menu parenting (mobile toggle, PC hover)
- * 2025.06  |  Accordion for mobile: one submenu open at a time
+ * main.js - * var.1.0
+ * ハンバーガーメニュー制御 + スムーススクロール処理 + 親子メニュー
  *************************************************************************/
 
-// ─── ① Stop browser’s automatic scroll restoration ───────────────
-if ("scrollRestoration" in history) {
-  history.scrollRestoration = "manual";
+const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+if ('scrollRestoration' in history) {
+  history.scrollRestoration = 'manual';
 }
 
-// ─── ② Navigation, dropdown, & smooth-scroll handler ─────────────
-(() => {
-  const hamburger = document.getElementById("js-hamburger");
-  const nav = document.getElementById("global-nav");
+document.addEventListener('DOMContentLoaded', () => {
+  const hamburger = document.getElementById('js-hamburger');
+  const nav = document.getElementById('global-nav');
+  const body = document.body;
+
   if (!hamburger || !nav) return;
 
-  /* -------------------------------------------------------------
-     utility : 現在ビューポートがモバイル幅かどうかを判定
-  ----------------------------------------------------------------*/
-  const isMobile = () => window.matchMedia("(max-width: 1023px)").matches;
+  //utility : 現在ビューポートがモバイル幅かどうかを判定
+    const isMobile = () => window.matchMedia("(max-width: 1023px)").matches;
 
-  /* -------------------------------------------------------------
-     1. ハンバーガー開閉
-  ----------------------------------------------------------------*/
+  // ハンバーガーメニュー開閉処理
   const toggleMenu = () => {
-    const isOpen = nav.classList.toggle("is-open"); // true = 開いた
-    hamburger.setAttribute("aria-expanded", isOpen);
-    nav.setAttribute("aria-hidden", !isOpen);
-    document.body.classList.toggle("is-scrollLock", isOpen);
+    const isOpen = nav.classList.toggle('is-open');
+    hamburger?.setAttribute('aria-expanded', isOpen);
+    nav.setAttribute('aria-hidden', !isOpen);
+    body.classList.toggle('is-scrollLock', isOpen);
 
-    // メニューを閉じるときは子メニューも一括で閉じる
-    if (!isOpen) {
-      nav.querySelectorAll(".is-open").forEach(el => el.classList.remove("is-open"));
-      nav.querySelectorAll(".js-dropdown[aria-expanded='true']")
-         .forEach(btn => btn.setAttribute("aria-expanded", false));
+    if (isOpen) {
+      nav.removeAttribute('inert');
+    } else {
+      const focused = document.activeElement;
+      if (nav.contains(focused)) focused.blur();
+      nav.setAttribute('inert', '');
     }
   };
-  hamburger.addEventListener("click", toggleMenu);
 
-/* -------------------------------------------------------------
-     2. 子メニュー (parent‑menu) 開閉トグル ─ モバイル時のみ
-        - 開く前に“他の開いている子メニュー”を閉じてアコーディオン化
-  --------------------------------------------------------------*/
+  hamburger?.addEventListener('click', toggleMenu);
+
+  //2. 子メニュー (parent‑menu) 開閉トグル ─ モバイル時のみ
   const initDropdownMenus = () => {
-    const toggles = nav.querySelectorAll(".js-dropdown");
+    const toggles = nav.querySelectorAll('.js-dropdown');
     if (!toggles.length) return;
 
     toggles.forEach(btn => {
-      const parentLi = btn.closest(".is-parent");
+      const parentLi = btn.closest('.is-parent');
       if (!parentLi) return;
 
       const handleToggle = e => {
@@ -56,25 +52,25 @@ if ("scrollRestoration" in history) {
         e.preventDefault();
 
         // ── アコーディオン：開く前に他を閉じる ─────────────
-        if (!parentLi.classList.contains("is-open")) {
-          nav.querySelectorAll(".is-parent.is-open").forEach(openLi => {
-            openLi.classList.remove("is-open");
-            const openBtn = openLi.querySelector(".js-dropdown");
-            if (openBtn) openBtn.setAttribute("aria-expanded", false);
+        if (!parentLi.classList.contains('is-open')) {
+          nav.querySelectorAll('.is-parent.is-open').forEach(openLi => {
+            openLi.classList.remove('is-open');
+            const openBtn = openLi.querySelector('.js-dropdown');
+            if (openBtn) openBtn.setAttribute('aria-expanded', false);
           });
         }
 
-        const isOpen = parentLi.classList.toggle("is-open");
-        btn.setAttribute("aria-expanded", isOpen);
+        const isOpen = parentLi.classList.toggle('is-open');
+        btn.setAttribute('aria-expanded', isOpen);
       };
 
-      btn.addEventListener("click", handleToggle);
+      btn.addEventListener('click', handleToggle);
 
       // Esc キーで閉じる
-      btn.addEventListener("keydown", e => {
-        if (e.key === "Escape") {
-          parentLi.classList.remove("is-open");
-          btn.setAttribute("aria-expanded", false);
+      btn.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+          parentLi.classList.remove('is-open');
+          btn.setAttribute('aria-expanded', false);
           btn.focus();
         }
       });
@@ -95,42 +91,87 @@ const setToggleTabIndex = () => {
 setToggleTabIndex();
 window.addEventListener('resize', setToggleTabIndex); // 幅を跨いだときも更新
 
+  // Safari対策付きスムーススクロール
+  const smoothScrollTo = (targetY, duration = 600) => {
+    const startY = window.pageYOffset;
+    const distance = targetY - startY;
+    const startTime = performance.now();
+    const easeOutQuad = t => t * (2 - t);
 
-  /* -------------------------------------------------------------
-     3. ページ内スムーススクロール
-  ----------------------------------------------------------------*/
-  document.querySelectorAll("a[href^='#']").forEach(link => {
-    link.addEventListener("click", e => {
-      const targetID = link.getAttribute("href");
-      const target = targetID === "#" ? document.documentElement
-                                       : document.querySelector(targetID);
+    const step = currentTime => {
+      const time = Math.min(1, (currentTime - startTime) / duration);
+      const eased = easeOutQuad(time);
+      window.scrollTo(0, startY + distance * eased);
+      if (time < 1) requestAnimationFrame(step);
+    };
+
+    requestAnimationFrame(step);
+  };
+
+  const scrollToTarget = target => {
+    const rect = target.getBoundingClientRect();
+    const scrollY = window.pageYOffset;
+    const scrollPadding = parseFloat(
+      getComputedStyle(document.documentElement).getPropertyValue('--header-h')
+    ) || 0;
+    const offsetY = scrollY + rect.top - scrollPadding;
+
+    if (isSafari) {
+      smoothScrollTo(offsetY, 600);
+    } else {
+      window.scrollTo({ top: offsetY, behavior: 'smooth' });
+    }
+  };
+
+  // アンカーリンククリック処理
+  document.querySelectorAll('a[href^="#"]').forEach(link => {
+    const handleAnchor = e => {
+      const href = link.getAttribute('href');
+      if (!href || href === '#') return;
+      const target = document.querySelector(href);
       if (!target) return;
 
       e.preventDefault();
-      history.replaceState(null, "", targetID);
+      history.pushState(null, '', href);
 
-      if (nav.classList.contains("is-open")) toggleMenu();
+      if (nav.classList.contains('is-open')) toggleMenu();
 
-      target.scrollIntoView({ behavior: "smooth", block: "start" });
+      requestAnimationFrame(() => scrollToTarget(target));
+    };
+
+    link.addEventListener('mousedown', e => {
+      if (e.button === 0) handleAnchor(e);
+    });
+
+    link.addEventListener('keydown', e => {
+      if (e.key === 'Enter') handleAnchor(e);
     });
   });
-})();
 
-// ─── ③ Reload / back-forward 時に hash 位置を補正 ─────────────
-document.addEventListener("DOMContentLoaded", () => {
+  // 初期読み込み時のハッシュ対応
   const hash = location.hash;
   if (hash) {
     const target = document.querySelector(hash);
     if (target) {
-      // ❶ 一時的に scroll-behavior を auto に設定して瞬時移動
-      const htmlEl = document.documentElement;
-      const prevBehavior = htmlEl.style.scrollBehavior;
-      htmlEl.style.scrollBehavior = "auto";
-
-      target.scrollIntoView({ block: "start" }); // ← アニメなしで補正
-
-      // ❷ 元に戻して以降のクリックは smooth
-      htmlEl.style.scrollBehavior = prevBehavior;
+      requestAnimationFrame(() => scrollToTarget(target));
     }
+  }
+
+  // PC/SP幅の切り替えに応じてナビ状態調整
+  window.matchMedia('(min-width: 768px)').addEventListener('change', e => {
+    if (e.matches) {
+      nav.removeAttribute('aria-hidden');
+      nav.removeAttribute('inert');
+    } else {
+      if (!nav.classList.contains('is-open')) {
+        nav.setAttribute('aria-hidden', 'true');
+        nav.setAttribute('inert', '');
+      }
+    }
+  });
+
+  if (window.matchMedia('(min-width: 768px)').matches) {
+    nav.removeAttribute('aria-hidden');
+    nav.removeAttribute('inert');
   }
 });

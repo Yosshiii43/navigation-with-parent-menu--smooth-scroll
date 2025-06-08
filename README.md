@@ -9,9 +9,11 @@
 | `$header-h`    | ヘッダーの高さ              | `64px`    |
 | `$header-mode` | `fixed` か `sticky` を指定 | `sticky`  |
 
-// 例: 高さ 72px の固定ヘッダーに切り替え
+＊$header-mode: fixed; // ← Safariでtabキーを使用したときにスクロール戻りが発生するためstickyは今のところ使用しません。
+
+// 例: 高さ 72px のstickyヘッダーに切り替えたい場合
 $header-h   : 72px;
-$header-mode: fixed;
+$header-mode: sticky;
 
 これらは
 `scss/foundation/_base.scss`
