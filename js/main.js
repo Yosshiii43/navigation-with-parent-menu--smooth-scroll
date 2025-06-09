@@ -130,7 +130,11 @@ document.addEventListener('DOMContentLoaded', () => {
       parentLink.addEventListener('keydown', e => {
         if (isPC() && e.key === 'Escape') {
           parentLi.classList.remove('is-open');
-          parentLink.blur();                         // focus-within 解除
+          // 次のトップレベルへ
+          const topLinks = [...nav.querySelectorAll('.p-nav__link')];
+          const curIndex = topLinks.indexOf(parentLink);
+          const next     = topLinks[(curIndex + 1) % topLinks.length];
+          next.focus();
         }
       });
 
@@ -142,7 +146,11 @@ document.addEventListener('DOMContentLoaded', () => {
           if (e.key === 'Escape') {
             e.preventDefault();
             parentLi.classList.remove('is-open');
-            link.blur();
+            /* ── Safari 対応: 次のトップレベルへフォーカス ── */
+            const topLinks = [...nav.querySelectorAll('.p-nav__link')];
+            const curIndex = topLinks.indexOf(parentLink);
+            const next     = topLinks[(curIndex + 1) % topLinks.length]; // 最後なら先頭
+            next.focus();                  // フォーカス移動で focus-within 解除
             return;
           }
           // 最後のリンクで Tab → 次のメニューへ
