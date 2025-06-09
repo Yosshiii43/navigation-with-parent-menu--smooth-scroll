@@ -26,6 +26,7 @@ git clone https://github.com/Yosshiii43/navigation-with-parent-menu--smooth-scro
 cd repo
 npm install        # Sass + PostCSS をインストール
 npm run dev        # style.min.css を自動生成し watch
+```
 
 ---
 
