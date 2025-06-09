@@ -15,7 +15,6 @@
 - 固定ヘッダーでもズレないスムーススクロール（Safari 専用 polyfill）
 - 変数 2 つで *高さ* と *fixed / sticky* を切替
 - タブレット幅 *768–1023 px* は **SP モード** と同じ挙動
-- Sass + PostCSS（Autoprefixer）ビルド
 
 ---
 
@@ -23,9 +22,7 @@
 
 ```bash
 git clone https://github.com/Yosshiii43/navigation-with-parent-menu--smooth-scroll
-cd repo
-npm install        # Sass + PostCSS をインストール
-npm run dev        # style.min.css を自動生成し watch
+cd navigation-with-parent-menu--smooth-scroll
 ```
 
 ---
