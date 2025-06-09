@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ------------------------------------------------------------------ */
   // ─ コンポーネント取得
   const hamburger = document.getElementById('js-hamburger');  // ≡ ボタン
-  let   nav       = document.getElementById('global-nav');     // <nav>
+  const nav       = document.getElementById('global-nav');     // <nav>
   const body      = document.body;
 
   // ─ 環境判定
@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
       parentLink.addEventListener('keydown', e => {
         if (isPC() && e.key === 'Escape') {
           parentLi.classList.remove('is-open');
-          // 次のトップレベルへ
+          //次のトップレベルへフォーカス（Safari対応を全ブラウザ共通にする） 
           const topLinks = [...nav.querySelectorAll('.p-nav__link')];
           const curIndex = topLinks.indexOf(parentLink);
           const next     = topLinks[(curIndex + 1) % topLinks.length];
@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (e.key === 'Escape') {
             e.preventDefault();
             parentLi.classList.remove('is-open');
-            /* ── Safari 対応: 次のトップレベルへフォーカス ── */
+            //次のトップレベルへフォーカス（Safari対応を全ブラウザ共通にする） 
             const topLinks = [...nav.querySelectorAll('.p-nav__link')];
             const curIndex = topLinks.indexOf(parentLink);
             const next     = topLinks[(curIndex + 1) % topLinks.length]; // 最後なら先頭
@@ -203,8 +203,10 @@ document.addEventListener('DOMContentLoaded', () => {
   /* 5. 幅切替時の再初期化                                              */
   /* ------------------------------------------------------------------ */
   function pcSpReInit() {
-    closeAllSubMenus();           // 子メニュー全閉じ
-    nav.classList.remove('is-open');      // ハンバーガーパネルも閉じる
+    closeAllSubMenus();                               // 子メニュー全閉じ
+    nav.classList.remove('is-open');                  // ハンバーガーパネルも閉じる
+    hamburger.setAttribute('aria-expanded', 'false'); // ★ハンバーガー初期化
+    body.classList.remove('is-scrollLock');           // ★SPロック解除
     setInert(isSP());              // inert 付け直し
 
     updateToggleTabindex();        // ▼ボタンの tabindex 切替
