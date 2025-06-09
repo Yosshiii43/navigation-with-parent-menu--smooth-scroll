@@ -71,8 +71,7 @@ scss/object/component/_hamburger.scss
 
 ---
 
-###
-ブレークポイント
+### ブレークポイント
 scss/foundation/_mq.scss
 
 | 名称     | min-width  | 挙動                        |
@@ -107,9 +106,7 @@ const mqPC      = window.matchMedia('(min-width: 1024px)'); // PC = 1024px↑
 | 95+    | 91+     | 15+    | 95+  | ❌  |
 
 ---
-## 本番公開時の手順
 
-1. Sass Watcher で `style.min.css` が生成されていることを確認  
-2. `index.html` の `<link>` を `css/style.min.css` に切り替え  
-3. `css/style.css` と `css/style.css.map` はサーバにアップロードしない
+## LIcense
 
+MIT © 2025  Yosshiii
