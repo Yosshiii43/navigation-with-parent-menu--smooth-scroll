@@ -16,9 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const hamburger = document.getElementById('js-hamburger');  // ≡ ボタン
   const nav       = document.getElementById('global-nav');     // <nav>
   const body      = document.body;
+  if (!nav || !hamburger) return;   // nav が無いページでは以降をスキップ
 
   // ─ 環境判定
-  const isSafari  = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
   const mqPC      = window.matchMedia('(min-width: 1024px)'); // PC = 1024px↑
   const isPC = () => mqPC.matches;    // true/false 返す関数
   const isSP = () => !mqPC.matches;   // 同上
@@ -69,41 +69,45 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ------------------------------------------------------------------ */
   /* 2. スムーススクロール (#リンク)                                     */
   /* ------------------------------------------------------------------ */
-  const smoothScrollTo = (y, duration = 600) => {
-    const start = window.pageYOffset;
-    const dist  = y - start;
-    const t0    = performance.now();
-    const ease  = t => t * (2 - t);                        // イージング関数
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const smoothScrollTo = (targetY, duration = 350) => { //速度をここで管理
+    if (reduceMotion) {
+      window.scrollTo(0, targetY);
+      return;
+    }
+    const startY  = window.pageYOffset;
+    const dist    = targetY - startY;
+    const startT  = performance.now();
+    const easeOut = t => t * (2 - t);       // お好みで変更可
 
     const step = now => {
-      const t = Math.min(1, (now - t0) / duration);
-      window.scrollTo(0, start + dist * ease(t));
+      const t = Math.min(1, (now - startT) / duration);
+      window.scrollTo(0, startY + dist * easeOut(t));
       if (t < 1) requestAnimationFrame(step);
     };
     requestAnimationFrame(step);
   };
 
-  function scrollToTarget(target) {
-    // 固定ヘッダーぶん上にずらす
-    const headerH = parseFloat(
-      getComputedStyle(document.documentElement)
-        .getPropertyValue('--header-h')
+  const scrollToTarget = target => {
+    const scrollPadding = parseFloat(
+      getComputedStyle(document.documentElement).getPropertyValue('--header-h')
     ) || 0;
-
-    const y = window.pageYOffset + target.getBoundingClientRect().top - headerH;
-    isSafari ? smoothScrollTo(y) : window.scrollTo({ top: y, behavior: 'smooth' });
-  }
+    const offsetY = target.getBoundingClientRect().top + window.pageYOffset - scrollPadding;
+    smoothScrollTo(offsetY);
+  };
 
   // <a href="#～"> をキャッチ
-  nav.querySelectorAll('a[href^=\"#\"]').forEach(link => {
+  nav.querySelectorAll('a[href^="#"]').forEach(link => {
     link.addEventListener('click', e => {
-      const href  = link.getAttribute('href');
-      const dest  = document.querySelector(href);
-      if (!dest) return;
+      const href  = link.getAttribute('href'); //クリックしたa要素のhref値を取得
       e.preventDefault();
-      history.pushState(null, '', href);           // URL の # も更新
-      if (nav.classList.contains('is-open')) toggleMenu(); // SP時は閉じる
-      requestAnimationFrame(() => scrollToTarget(dest));
+      if (!href || href === '#') return;   // href が空 or "#" だけのダミーリンクは無視
+      const dest  = document.querySelector(href); //例：href="#first" → id="first" を持つ要素を取得
+      if (!dest) return; //見つからなければ処理終了
+      history.pushState(null, '', href);           // URL の # 部分を書き換え、戻る/共有に対応
+      if (nav.classList.contains('is-open')) toggleMenu(); // SP時はメニューを閉じる
+      requestAnimationFrame(() => scrollToTarget(dest)); //レイアウトが確定したフレームでヘッダー分オフセットして滑らかにスクロール
     });
   });
 
@@ -129,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
       parentLink.addEventListener('keydown', e => {
         if (isPC() && e.key === 'Escape') {
           parentLi.classList.remove('is-open');
-          //次のトップレベルへフォーカス（Safari対応を全ブラウザ共通にする） 
+          //次のトップレベルへフォーカス 
           const topLinks = [...nav.querySelectorAll('.p-nav__link')];
           const curIndex = topLinks.indexOf(parentLink);
           const next     = topLinks[(curIndex + 1) % topLinks.length];
@@ -145,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (e.key === 'Escape') {
             e.preventDefault();
             parentLi.classList.remove('is-open');
-            //次のトップレベルへフォーカス（Safari対応を全ブラウザ共通にする） 
+            //次のトップレベルへフォーカス
             const topLinks = [...nav.querySelectorAll('.p-nav__link')];
             const curIndex = topLinks.indexOf(parentLink);
             const next     = topLinks[(curIndex + 1) % topLinks.length]; // 最後なら先頭
