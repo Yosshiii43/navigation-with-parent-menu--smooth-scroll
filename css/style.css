@@ -18,6 +18,7 @@ html, body {
 
 html {
   font-size: 100%;
+  scroll-padding-top: var(--header-h);
 }
 
 body {
@@ -331,7 +332,7 @@ body {
     padding: 0;
     gap: 2rem;
     /* ─ 子メニューをドロップダウン化 ─── */
-    /* hover / focus-within で開く */
+    /* hover だけ残し、focus-within を削除 */
   }
   .p-nav__list {
     display: flex;
