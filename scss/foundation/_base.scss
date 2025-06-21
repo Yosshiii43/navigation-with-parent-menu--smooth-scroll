@@ -4,7 +4,7 @@
 @use "forwards" as *;   // ここはパスが合っていれば OK
 
 :root {
-  --header-h: #{$header-h};
+  --header-h: #{$header-h}; //JS が走るまでのフォールバック初期値
 }
 
 html, body {

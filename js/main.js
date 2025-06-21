@@ -13,11 +13,22 @@ document.addEventListener('DOMContentLoaded', () => {
   /* 0. 変数と便利関数                                                  */
   /* ------------------------------------------------------------------ */
   // ─ コンポーネント取得
+  const header    = document.getElementById('js-header');
   const hamburger = document.getElementById('js-hamburger');  // ≡ ボタン
   const nav       = document.getElementById('global-nav');     // <nav>
   const body      = document.body;
   if (!nav || !hamburger) return;   // nav が無いページでは以降をスキップ
 
+  const getHeaderHeight = () => header ? header.offsetHeight : 0;
+
+  // ユーティリティ
+  const syncHeaderVar = () => { //「CSS 変数 --header-h をヘッダーの実寸で同期する」関数。
+    document.documentElement.style.setProperty('--header-h', `${getHeaderHeight()}px`);
+  };
+  syncHeaderVar();                         // 初期設定
+  window.addEventListener('resize', syncHeaderVar); //ブラウザのリサイズ時に毎回実行
+
+  
   // ─ 環境判定
   const mqPC      = window.matchMedia('(min-width: 1024px)'); // PC = 1024px↑
   const isPC = () => mqPC.matches;    // true/false 返す関数
@@ -90,24 +101,30 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const scrollToTarget = target => {
-    const scrollPadding = parseFloat(
-      getComputedStyle(document.documentElement).getPropertyValue('--header-h')
-    ) || 0;
-    const offsetY = target.getBoundingClientRect().top + window.pageYOffset - scrollPadding;
+    const headerH = getHeaderHeight();   // ←動的に取得
+    const offsetY = target.getBoundingClientRect().top + window.pageYOffset - headerH;
     smoothScrollTo(offsetY);
   };
 
-  // <a href="#～"> をキャッチ
-  nav.querySelectorAll('a[href^="#"]').forEach(link => {
+  // アンカーリンク（ページ内）クリック：スムーススクロール
+  document.querySelectorAll('a[href^="#"]').forEach(link => {
     link.addEventListener('click', e => {
-      const href  = link.getAttribute('href'); //クリックしたa要素のhref値を取得
-      e.preventDefault();
-      if (!href || href === '#') return;   // href が空 or "#" だけのダミーリンクは無視
-      const dest  = document.querySelector(href); //例：href="#first" → id="first" を持つ要素を取得
-      if (!dest) return; //見つからなければ処理終了
-      history.pushState(null, '', href);           // URL の # 部分を書き換え、戻る/共有に対応
-      if (nav.classList.contains('is-open')) toggleMenu(); // SP時はメニューを閉じる
-      requestAnimationFrame(() => scrollToTarget(dest)); //レイアウトが確定したフレームでヘッダー分オフセットして滑らかにスクロール
+      const href = link.getAttribute('href');     // "#first" 等
+      e.preventDefault();                         // ★常に標準ジャンプ抑止
+
+      if (!href || href === '#') return;          // ダミー "#" はここで終了
+
+      const target = document.querySelector(href);
+      if (!target) return;                        // 要素が無ければ終了
+
+      history.pushState(null, '', href);          // URL の # を更新
+
+      // ハンバーガーが開いていたら閉じる (nav がある時のみ)
+      const nav = document.getElementById('global-nav');
+      if (nav && nav.classList.contains('is-open')) toggleMenu();
+
+      // 次フレームでスムーススクロール
+      requestAnimationFrame(() => scrollToTarget(target));
     });
   });
 
